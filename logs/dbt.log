@@ -1,0 +1,31 @@
+[0m14:55:06.088561 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x12003d610>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x12361da60>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x12361d790>]}
+
+
+============================== 14:55:06.094671 | cf8623fd-0524-4c3e-b6bc-78273331f2d3 ==============================
+[0m14:55:06.094671 [info ] [MainThread]: Running with dbt=1.11.11
+[0m14:55:06.095088 [debug] [MainThread]: running dbt with arguments {'invocation_command': 'dbt init olist_pipeline', 'profiles_dir': '/Users/ciaranguyen/.dbt', 'target_path': 'None', 'fail_fast': 'False', 'version_check': 'True', 'log_cache_events': 'False', 'write_json': 'True', 'quiet': 'False', 'cache_selected_only': 'False', 'static_parser': 'True', 'empty': 'None', 'indirect_selection': 'eager', 'send_anonymous_usage_stats': 'True', 'log_format': 'default', 'introspect': 'True', 'use_experimental_parser': 'False', 'warn_error': 'None', 'log_path': 'logs', 'debug': 'False', 'no_print': 'None', 'partial_parse': 'True', 'use_colors': 'True', 'printer_width': '80', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])'}
+[0m14:55:06.104203 [info ] [MainThread]: Creating dbt configuration folder at /Users/ciaranguyen/.dbt
+[0m14:55:06.105614 [debug] [MainThread]: Starter project path: /Users/ciaranguyen/Documents/ecom_project/venv/lib/python3.12/site-packages/dbt/include/starter_project
+[0m14:55:06.110353 [info ] [MainThread]: 
+Your new dbt project "olist_pipeline" was created!
+
+For more information on how to configure the profiles.yml file,
+please consult the dbt documentation here:
+
+  https://docs.getdbt.com/docs/configure-your-profile
+
+One more thing:
+
+Need help? Don't hesitate to reach out to us via GitHub issues or on Slack:
+
+  https://community.getdbt.com/
+
+Happy modeling!
+
+[0m14:55:06.111009 [info ] [MainThread]: Setting up your profile.
+[0m14:55:43.246621 [info ] [MainThread]: Profile olist_pipeline written to /Users/ciaranguyen/.dbt/profiles.yml using target's sample configuration. Once updated, you'll be able to start developing with dbt.
+[0m14:55:43.750607 [debug] [MainThread]: Resource report: {"command_name": "init", "command_success": true, "command_wall_clock_time": 37.723732, "process_in_blocks": "0", "process_kernel_time": 0.329437, "process_mem_max_rss": "110247936", "process_out_blocks": "0", "process_user_time": 1.31417}
+[0m14:55:43.752087 [debug] [MainThread]: Command `dbt init` succeeded at 14:55:43.751770 after 37.73 seconds
+[0m14:55:43.753373 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x122c0c9b0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1236f98b0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x1236f9640>]}
+[0m14:55:43.754500 [debug] [MainThread]: Flushing usage events
+[0m14:55:45.660417 [debug] [MainThread]: An error was encountered while trying to flush usage events

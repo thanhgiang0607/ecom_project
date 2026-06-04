@@ -1,0 +1,6 @@
+olist_pipeline:
+  outputs:
+    dev:
+      type: duckdb
+      path: /Users/ciaranguyen/Documents/ecom_project/dev.duckdb
+  target: dev
