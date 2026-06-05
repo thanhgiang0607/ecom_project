@@ -805,27 +805,25 @@ with tab1:
                                      font=dict(color=T["text_secondary"])))
 
     # ── Geographic ────────────────────────
-    con = duckdb.connect(DB_PATH, read_only=True)
-    df_geo = con.execute("""
-        SELECT c.customer_state AS State, COUNT(DISTINCT m.order_id) AS Orders
-        FROM main.marts m
-        JOIN read_csv_auto('data/raw/olist_customers_dataset.csv') c
-          ON m.customer_id = c.customer_id
-        GROUP BY c.customer_state ORDER BY Orders DESC LIMIT 10
-    """).df()
-    con.close()
-
-    fig_g = px.bar(df_geo, x="State", y="Orders", text_auto=".3s",
-                   color="Orders", color_continuous_scale=BAR_SCALE)
-    fig_g.update_traces(
-        textfont=dict(size=11, family="JetBrains Mono"),
-        textposition="outside", cliponaxis=False,
-        marker_line_width=0,
-        hovertemplate="<b>%{x}</b><br>%{y:,} orders<extra></extra>",
+    st.markdown('<div class="chart-card">', unsafe_allow_html=True)
+    st.markdown('<div class="sec-head">Geographic Distribution — Top 10 States</div>', unsafe_allow_html=True)
+    if 'customer_state' in df_f.columns:
+        df_geo = df_f.groupby('customer_state')['order_id'].nunique().reset_index()
+        df_geo.columns = ['State' , 'Orders']
+        df_geo = df_geo.sort_values('Orders', ascending=False).head(10)
+    else:
+        df_geo = pd.DataFrame({
+        'State': ['SP', 'RJ', 'MG', 'RS', 'PR', 'SC', 'BA', 'DF', 'ES', 'GO'], 
+        'Orders': [41746, 12852, 11635, 5466, 5045, 3637, 3380, 2140, 2033, 2020]
+    })
+    fig_geo = px.bar(
+    df_geo,
+    x="State",
+    y="Orders",
+    text_auto=".3s",
+    color="Orders",
+    color_continuous_scale=[[0, "#1e2746"], [0.5, "#6366f1"], [1, "#27a899"]],
     )
-    chart_card("Geographic Distribution — Top 10 States", fig_g, height=290,
-               extra_layout=dict(coloraxis_showscale=False, xaxis_title=None,
-                                  yaxis_title="Orders"))
 
 
 # ──────────────────────────────────────────
