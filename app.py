@@ -824,6 +824,23 @@ with tab1:
     color="Orders",
     color_continuous_scale=[[0, "#1e2746"], [0.5, "#6366f1"], [1, "#27a899"]],
     )
+    fig_geo.update_traces(
+        hovertemplate="<b>State: %{x}</b><br>Orders: %{y:,}<extra></extra>",
+        textposition="outside",
+        cliponaxis=False,
+        marker_line_width=0,
+    )
+    chart_card(
+        "Geographic Distribution — Top 10 States", 
+        fig_geo, 
+        height=280,
+        extra_layout=dict(
+            coloraxis_showscale=False,
+            xaxis_title=None,
+            yaxis_title="Orders Placed",
+            xaxis=dict(showgrid=False)
+        )
+    )
 
 
 # ──────────────────────────────────────────
