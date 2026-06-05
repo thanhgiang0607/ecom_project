@@ -483,14 +483,14 @@ def apply_theme(fig, height=300, margin=None):
     
     # Use update_xaxes/update_yaxes so per-chart extra_layout xaxis dicts don't conflict
     fig.update_xaxes(
-        gridcolor=T["grid"], zeroline=False, showline=False,
-        tickfont=dict(size=10, color=T["axis_text"]),
-        titlefont=dict(color=T["text_secondary"])
+    gridcolor=T["grid"], zeroline=False, showline=False,
+    tickfont=dict(size=10, color=T["axis_text"]),
+    title_font=dict(color=T["text_secondary"])   # ← was titlefont
     )
     fig.update_yaxes(
-        gridcolor=T["grid"], zeroline=False, showline=False,
-        tickfont=dict(size=10, color=T["axis_text"]),
-        titlefont=dict(color=T["text_secondary"])
+    gridcolor=T["grid"], zeroline=False, showline=False,
+    tickfont=dict(size=10, color=T["axis_text"]),
+    title_font=dict(color=T["text_secondary"])   # ← was titlefont
     )
     
     try:
