@@ -1,5 +1,14 @@
 # 📊 Olist E-Commerce Analytics Platform
 
+
+[![Live Demo](https://img.shields.io/badge/Live-Demo-red?style=flat-square&logo=streamlit)](https://ecomprojectgit-546sw5cdmkkqffyltmbq7u.streamlit.app/)
+[![Python](https://img.shields.io/badge/Python-3.11-blue?style=flat-square&logo=python)]()
+[![dbt](https://img.shields.io/badge/dbt-Core-orange?style=flat-square&logo=dbt)]()
+[![DuckDB](https://img.shields.io/badge/DuckDB-Data_Warehouse-yellow?style=flat-square)]()
+[![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-red?style=flat-square&logo=streamlit)]()
+
+> End-to-End Modern Data Stack (MDS) project for transforming, analyzing, and visualizing Brazilian e-commerce data.
+
 > End-to-End Modern Data Stack (MDS) project for transforming, analyzing, and visualizing Brazilian e-commerce data using DuckDB, dbt, Python, and Streamlit.
 
 ---
@@ -290,6 +299,26 @@ http://localhost:8501
 ✅ Delivered actionable business insights from raw transactional data
 
 ---
+
+## 🌐 Live Demo
+
+Experience the deployed application here:
+
+🚀 **Interactive Dashboard:**  
+https://ecomprojectgit-546sw5cdmkkqffyltmbq7u.streamlit.app/
+
+The dashboard is publicly hosted on Streamlit Community Cloud and provides access to:
+
+- Executive KPI monitoring
+- Revenue & logistics analytics
+- RFM customer segmentation
+- Cohort retention analysis
+- Interactive filtering and drill-down exploration
+
+No installation required — simply open the link and start exploring the insights.
+
+---
+
 
 ## 👨‍💻 Author
 
