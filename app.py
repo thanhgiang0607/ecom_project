@@ -538,7 +538,7 @@ def load_data():
     cohort = pd.read_csv("cohort_data.csv")
     recs = pd.read_csv("recommendations_data.csv")
     marts["purchase_at"] = pd.to_datetime(marts["purchase_at"])
-    return marts, rfm, cohort
+    return marts, rfm, cohort,recs
 
 df_marts, df_rfm, df_cohort, df_recs = load_data()
 
