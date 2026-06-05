@@ -475,14 +475,19 @@ def apply_theme(fig, height=300, margin=None):
         xaxis=dict(
             gridcolor=T["grid"], zeroline=False, showline=False,
             tickfont=dict(size=10, color=T["axis_text"]),
-            titlefont=dict(color=T["text_secondary"]) # Màu tiêu đề trục X
+            titlefont=dict(color=T["text_secondary"])
         ),
         yaxis=dict(
             gridcolor=T["grid"], zeroline=False, showline=False,
             tickfont=dict(size=10, color=T["axis_text"]),
-            titlefont=dict(color=T["text_secondary"]) # Màu tiêu đề trục Y
+            titlefont=dict(color=T["text_secondary"])
         ),
     )
+    try:
+        fig.update_traces(textfont_color=T["text_secondary"], selector=dict(type='bar'))
+        fig.update_traces(textfont_color=T["text_secondary"], selector=dict(type='pie'))
+    except Exception:
+        pass
     return fig
 
 # ── Color tokens ──────────────────────────
