@@ -771,7 +771,7 @@ with tab1:
                                      xaxis=dict(showgrid=False)))
 
     # ── Delivery + Order status ───────────
-    col_log, col_st = st.columns(2)
+    col_log, col_st = st.columns([3,2])
     with col_log:
         df_log = df_f.set_index("purchase_at").resample("ME")["actual_delivery_days"].mean().reset_index()
         fig_l = go.Figure(go.Scatter(
@@ -793,11 +793,16 @@ with tab1:
         fig_s = px.pie(df_status, values="count", names="order_status",
                        hole=0.65, color_discrete_sequence=PALETTE)
         fig_s.update_traces(
-            textposition="outside", textinfo="percent+label",
+            textposition="inside", textinfo="percent",
             textfont=dict(size=10, family="Inter"),
             marker=dict(line=dict(color=T["bg_card"], width=2.5)),
             hovertemplate="<b>%{label}</b><br>%{value:,} orders (%{percent})<extra></extra>",
             pull=[0.03] + [0] * (len(df_status) - 1),
+            domain=dict(x=[0.15, 0.85], y=[0.05, 0.95])
+        )
+        fig_s.update_layout(
+            showlegend = True,
+            legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=0.85)
         )
         chart_card("Order Status Distribution", fig_s, height=250,
                    margin=dict(l=30, r=30, t=20, b=20),
@@ -853,7 +858,7 @@ with tab1:
             marker=dict(line=dict(color=T["bg_card"], width=2.5)),
             hovertemplate="<b>%{label}</b><br>%{value:,} reviews<extra></extra>"
         )
-        chart_card("🧠 NLP Customer Sentiment Analytics (Reviews)", fig_sent, height=280,
+        chart_card("NLP Customer Sentiment Analytics (Reviews)", fig_sent, height=280,
                    margin=dict(l=30, r=30, t=20, b=20), extra_layout=dict(showlegend=False))
 
 
