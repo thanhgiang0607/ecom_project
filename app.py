@@ -479,16 +479,18 @@ def apply_theme(fig, height=300, margin=None):
             bordercolor=T["border_hover"],
             font_color=T["text_primary"]
         ),
-        xaxis=dict(
-            gridcolor=T["grid"], zeroline=False, showline=False,
-            tickfont=dict(size=10, color=T["axis_text"]),
-            titlefont=dict(color=T["text_secondary"])
-        ),
-        yaxis=dict(
-            gridcolor=T["grid"], zeroline=False, showline=False,
-            tickfont=dict(size=10, color=T["axis_text"]),
-            titlefont=dict(color=T["text_secondary"])
-        ),
+    )
+    
+    # Use update_xaxes/update_yaxes so per-chart extra_layout xaxis dicts don't conflict
+    fig.update_xaxes(
+        gridcolor=T["grid"], zeroline=False, showline=False,
+        tickfont=dict(size=10, color=T["axis_text"]),
+        titlefont=dict(color=T["text_secondary"])
+    )
+    fig.update_yaxes(
+        gridcolor=T["grid"], zeroline=False, showline=False,
+        tickfont=dict(size=10, color=T["axis_text"]),
+        titlefont=dict(color=T["text_secondary"])
     )
     
     try:
