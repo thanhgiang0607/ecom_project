@@ -461,14 +461,19 @@ st.markdown(build_css(T), unsafe_allow_html=True)
 # ══════════════════════════════════════════
 def apply_theme(fig, height=300, margin=None):
     m = margin or dict(l=16, r=16, t=10, b=16)
+    
     fig.update_layout(
         paper_bgcolor=T["paper_bg"],
         plot_bgcolor=T["plot_bg"],
-        font=dict(color=T["axis_text"], family="Inter", size=11),
-        height=height, margin=m,
+        font_color=T["text_secondary"], 
+        font_family="Inter",            
+        font_size=11,
+        height=height, 
+        margin=m,
         hoverlabel=dict(
             bgcolor=T["bg_card2"],
-            font_size=12, font_family="Inter",
+            font_size=12, 
+            font_family="Inter",
             bordercolor=T["border_hover"],
             font_color=T["text_primary"]
         ),
@@ -483,11 +488,13 @@ def apply_theme(fig, height=300, margin=None):
             titlefont=dict(color=T["text_secondary"])
         ),
     )
+    
     try:
         fig.update_traces(textfont_color=T["text_secondary"], selector=dict(type='bar'))
         fig.update_traces(textfont_color=T["text_secondary"], selector=dict(type='pie'))
     except Exception:
         pass
+        
     return fig
 
 # ── Color tokens ──────────────────────────
