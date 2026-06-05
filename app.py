@@ -465,9 +465,11 @@ def apply_theme(fig, height=300, margin=None):
     fig.update_layout(
         paper_bgcolor=T["paper_bg"],
         plot_bgcolor=T["plot_bg"],
-        font_color=T["text_secondary"], 
-        font_family="Inter",            
-        font_size=11,
+        font=dict(
+            color=T["text_secondary"],
+            family="Inter",
+            size=11
+        ),
         height=height, 
         margin=m,
         hoverlabel=dict(
