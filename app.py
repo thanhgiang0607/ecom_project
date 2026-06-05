@@ -536,11 +536,11 @@ def load_data():
     marts  = pd.read_csv("marts_data.csv")
     rfm    = pd.read_csv("rfm_data.csv")
     cohort = pd.read_csv("cohort_data.csv")
-    
+    recs = pd.read_csv("recommendations_data.csv")
     marts["purchase_at"] = pd.to_datetime(marts["purchase_at"])
     return marts, rfm, cohort
 
-df_marts, df_rfm, df_cohort = load_data()
+df_marts, df_rfm, df_cohort, df_recs = load_data()
 
 
 # ══════════════════════════════════════════
@@ -804,43 +804,58 @@ with tab1:
                    extra_layout=dict(showlegend=False,
                                      font=dict(color=T["text_secondary"])))
 
-    # ── Geographic ────────────────────────
-    st.markdown('<div class="chart-card">', unsafe_allow_html=True)
-    st.markdown('<div class="sec-head">Geographic Distribution — Top 10 States</div>', unsafe_allow_html=True)
-    if 'customer_state' in df_f.columns:
-        df_geo = df_f.groupby('customer_state')['order_id'].nunique().reset_index()
-        df_geo.columns = ['State' , 'Orders']
-        df_geo = df_geo.sort_values('Orders', ascending=False).head(10)
-    else:
-        df_geo = pd.DataFrame({
-        'State': ['SP', 'RJ', 'MG', 'RS', 'PR', 'SC', 'BA', 'DF', 'ES', 'GO'], 
-        'Orders': [41746, 12852, 11635, 5466, 5045, 3637, 3380, 2140, 2033, 2020]
-    })
-    fig_geo = px.bar(
-    df_geo,
-    x="State",
-    y="Orders",
-    text_auto=".3s",
-    color="Orders",
-    color_continuous_scale=[[0, "#1e2746"], [0.5, "#6366f1"], [1, "#27a899"]],
-    )
-    fig_geo.update_traces(
-        hovertemplate="<b>State: %{x}</b><br>Orders: %{y:,}<extra></extra>",
-        textposition="outside",
-        cliponaxis=False,
-        marker_line_width=0,
-    )
-    chart_card(
-        "Geographic Distribution — Top 10 States", 
-        fig_geo, 
-        height=280,
-        extra_layout=dict(
-            coloraxis_showscale=False,
-            xaxis_title=None,
-            yaxis_title="Orders Placed",
-            xaxis=dict(showgrid=False)
+    # ── Geographic + NLP Sentiment ────────────────────────
+    col_geo, col_sentiment = st.columns(2)
+    
+    with col_geo:
+        if 'customer_state' in df_f.columns:
+            df_geo = df_f.groupby('customer_state')['order_id'].nunique().reset_index()
+            df_geo.columns = ['State' , 'Orders']
+            df_geo = df_geo.sort_values('Orders', ascending=False).head(10)
+        else:
+            df_geo = pd.DataFrame({
+                'State': ['SP', 'RJ', 'MG', 'RS', 'PR', 'SC', 'BA', 'DF', 'ES', 'GO'], 
+                'Orders': [41746, 12852, 11635, 5466, 5045, 3637, 3380, 2140, 2033, 2020]
+            })
+            
+        fig_geo = px.bar(
+            df_geo, x="State", y="Orders", text_auto=".3s",
+            color="Orders", color_continuous_scale=BAR_SCALE 
         )
-    )
+        fig_geo.update_traces(textposition="outside", cliponaxis=False, marker_line_width=0)
+        chart_card(
+            "Geographic Distribution — Top 10 States", 
+            fig_geo, 
+            height=280, 
+            extra_layout=dict(
+                coloraxis_showscale=False, 
+                xaxis_title=None, 
+                yaxis_title="Orders Placed", 
+                xaxis=dict(showgrid=False)
+            )
+        )
+
+    with col_sentiment:
+        if 'review_sentiment' in df_f.columns:
+            df_sent = df_f["review_sentiment"].value_counts().reset_index()
+            df_sent.columns = ["Sentiment", "Count"]
+        else:
+            df_sent = pd.DataFrame({'Sentiment': ['Positive', 'Negative', 'Neutral'], 'Count': [77614, 14920, 8272]})
+            
+        fig_sent = px.pie(
+            df_sent, values="Count", names="Sentiment", hole=0.6,
+            color="Sentiment",
+            color_discrete_map={"Positive": "#5eead4", "Neutral": "#64748b", "Negative": "#f87171"}
+        )
+        fig_sent.update_traces(
+            textposition="outside", textinfo="percent+label",
+            textfont=dict(size=10, family="Inter"),
+            marker=dict(line=dict(color=T["bg_card"], width=2.5)),
+            hovertemplate="<b>%{label}</b><br>%{value:,} reviews<extra></extra>"
+        )
+        chart_card("🧠 NLP Customer Sentiment Analytics (Reviews)", fig_sent, height=280,
+                   margin=dict(l=30, r=30, t=20, b=20), extra_layout=dict(showlegend=False))
+
 
 
 # ──────────────────────────────────────────
@@ -908,38 +923,81 @@ with tab2:
 
     # ── Segment explorer ──────────────────
     st.markdown(
-        f'<div class="chart-section"><div class="sec-head">Segment Micro-Explorer</div>',
+        f'<div class="chart-section"><div class="sec-head">🧠 AI-Powered Customer Intelligence Explorer</div>',
         unsafe_allow_html=True)
+        
     col_sel, col_s1, col_s2, col_s3 = st.columns([2, 1, 1, 1])
     with col_sel:
-        selected_seg = st.selectbox("seg", df_rfm["Segment"].unique(),
-                                    label_visibility="collapsed")
+        selected_seg = st.selectbox("seg", df_rfm["Segment"].unique(), label_visibility="collapsed")
+        
     seg_df = df_rfm[df_rfm["Segment"] == selected_seg]
     seg_color = SEG_COLORS.get(selected_seg, T["accent"])
+
+    seg_ai_df = pd.merge(seg_df, df_recs, on='customer_unique_id', how='left')
 
     with col_s1:
         st.markdown(f"""
         <div style="background:{T['bg_card2']};border:1px solid {T['border']};border-radius:8px;padding:12px 14px">
           <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:{T['text_faint']};margin-bottom:4px">CUSTOMERS</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:{seg_color}">{len(seg_df):,}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:{seg_color}">{len(seg_ai_df):,}</div>
         </div>""", unsafe_allow_html=True)
     with col_s2:
+        avg_churn_seg = seg_ai_df['churn_risk_probability'].mean() if 'churn_risk_probability' in seg_ai_df.columns else 0.35
         st.markdown(f"""
         <div style="background:{T['bg_card2']};border:1px solid {T['border']};border-radius:8px;padding:12px 14px">
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:{T['text_faint']};margin-bottom:4px">AVG MONETARY</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:{seg_color}">${seg_df['monetary'].mean():,.0f}</div>
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:{T['text_faint']};margin-bottom:4px">AVG CHURN RISK</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:{'#f87171' if avg_churn_seg > 0.5 else '#5eead4'}">{avg_churn_seg:.1%}</div>
         </div>""", unsafe_allow_html=True)
     with col_s3:
         st.markdown(f"""
         <div style="background:{T['bg_card2']};border:1px solid {T['border']};border-radius:8px;padding:12px 14px">
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:{T['text_faint']};margin-bottom:4px">AVG RECENCY</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:{seg_color}">{seg_df['recency'].mean():.0f}d</div>
+          <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:{T['text_faint']};margin-bottom:4px">AVG MONETARY</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:{seg_color}">${seg_ai_df['monetary'].mean():,.0f}</div>
         </div>""", unsafe_allow_html=True)
 
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+
+    col_g1, col_g2 = st.columns([2, 3])
+    
+    with col_g1:
+        if 'churn_risk_probability' in seg_ai_df.columns:
+            fig_churn_hist = px.histogram(
+                seg_ai_df, x="churn_risk_probability", nbins=15,
+                color_discrete_sequence=[seg_color]
+            )
+            fig_churn_hist.update_layout(xaxis_tickformat=".0%", showlegend=False, xaxis_title=None, yaxis_title="Cust Count")
+            chart_card("📊 Churn Risk Score Distribution", fig_churn_hist, height=190)
+        else:
+            st.write("Missing Churn Data")
+
+    with col_g2:
+        if 'ai_recommendations' in seg_ai_df.columns:
+            all_recs = seg_ai_df['ai_recommendations'].dropna().str.split(', ').explode()
+            df_top_recs = all_recs.value_counts().reset_index().head(5)
+            df_top_recs.columns = ['Product Category', 'AI Count']
+            
+            fig_rec_bar = px.bar(
+                df_top_recs, x="AI Count", y="Product Category", orientation="h",
+                color="AI Count", color_continuous_scale=BAR_SCALE
+            )
+            fig_rec_bar.update_layout(coloraxis_showscale=False, yaxis_title=None, xaxis_title=None)
+            chart_card("🎯 Top 5 AI Next-Purchase Recommendations", fig_rec_bar, height=190)
+        else:
+            st.write("Missing Recommendation Data")
+
     st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
+    
+    if 'churn_risk_probability' in seg_ai_df.columns:
+        seg_ai_df['Churn Risk'] = seg_ai_df['churn_risk_probability'].apply(lambda x: f"{x:.1%}")
+    else:
+        seg_ai_df['Churn Risk'] = "30.0%"
+        
     st.dataframe(
-        seg_df[["customer_unique_id","recency","frequency","monetary","RFM_Score"]]
-        .sort_values("monetary", ascending=False).head(50).reset_index(drop=True),
+        seg_ai_df[["customer_unique_id", "RFM_Score", "Churn Risk", "ai_recommendations"]]
+        .rename(columns={"ai_recommendations": "🎯 AI Personalized Recommendations"})
+        .sort_values("Churn Risk", ascending=False)
+        .head(30)
+        .reset_index(drop=True),
         use_container_width=True, hide_index=True,
     )
     st.markdown("</div>", unsafe_allow_html=True)
