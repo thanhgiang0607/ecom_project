@@ -62,7 +62,7 @@ TOKENS = {
         "plot_bg":       "#ffffff",
         "paper_bg":      "#ffffff",
         "grid":          "rgba(0,0,0,0.04)",
-        "axis_text":     "#9aa3b8",
+        "axis_text":     "#475569",
         "accent":        "#0d9488",
         "accent_rgb":    "13,148,136",
         "accent_bg":     "rgba(13,148,136,0.07)",
@@ -470,11 +470,18 @@ def apply_theme(fig, height=300, margin=None):
             bgcolor=T["bg_card2"],
             font_size=12, font_family="Inter",
             bordercolor=T["border_hover"],
+            font_color=T["text_primary"]
         ),
-        xaxis=dict(gridcolor=T["grid"], zeroline=False, showline=False,
-                   tickfont=dict(size=10, color=T["axis_text"])),
-        yaxis=dict(gridcolor=T["grid"], zeroline=False, showline=False,
-                   tickfont=dict(size=10, color=T["axis_text"])),
+        xaxis=dict(
+            gridcolor=T["grid"], zeroline=False, showline=False,
+            tickfont=dict(size=10, color=T["axis_text"]),
+            titlefont=dict(color=T["text_secondary"]) # Màu tiêu đề trục X
+        ),
+        yaxis=dict(
+            gridcolor=T["grid"], zeroline=False, showline=False,
+            tickfont=dict(size=10, color=T["axis_text"]),
+            titlefont=dict(color=T["text_secondary"]) # Màu tiêu đề trục Y
+        ),
     )
     return fig
 
