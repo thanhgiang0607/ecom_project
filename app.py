@@ -531,12 +531,12 @@ def chart_card(title: str, fig, height=300, margin=None, extra_layout=None):
 DB_PATH = "/Users/ciaranguyen/Documents/ecom_project/dev.duckdb"
 
 @st.cache_data
+@st.cache_data
 def load_data():
-    con = duckdb.connect(DB_PATH, read_only=True)
-    marts  = con.execute("SELECT * FROM main.marts").df()
-    rfm    = con.execute("SELECT * FROM main.analytics_rfm").df()
-    cohort = con.execute("SELECT * FROM main.analytics_cohort").df()
-    con.close()
+    marts  = pd.read_csv("marts_data.csv")
+    rfm    = pd.read_csv("rfm_data.csv")
+    cohort = pd.read_csv("cohort_data.csv")
+    
     marts["purchase_at"] = pd.to_datetime(marts["purchase_at"])
     return marts, rfm, cohort
 
