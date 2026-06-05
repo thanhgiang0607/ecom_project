@@ -188,21 +188,16 @@ This finding suggests that increasing customer retention may generate a higher r
 
 ## 📸 Dashboard Preview
 
-Add screenshots of your dashboard here:
 
 ```markdown
 ![Dashboard Overview](images/dashboard_overview.png)
 
-![Customer Segmentation](images/rfm_dashboard.png)
+![Customer Segmentation](rfm_analytics.png)
 
-![Retention Analysis](images/cohort_dashboard.png)
+![Retention Analysis](cohort_retention_analysis.png)
 ```
 
-Or simply:
 
-```markdown
-![Dashboard Preview](dashboard_preview.png)
-```
 
 ---
 
