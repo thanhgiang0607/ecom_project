@@ -1125,80 +1125,84 @@ with tab3:
                                            values="unique_customers")
         cohort_sizes     = cohort_pivot.iloc[:, 0]
         retention_matrix = cohort_pivot.divide(cohort_sizes, axis=0).iloc[:, 1:13]
-        retention_matrix.index = pd.to_datetime(retention_matrix.index).strftime("%Y-%m")
 
-        z_vals   = retention_matrix.values
-        x_labels = [f"M+{i}" for i in retention_matrix.columns]
-        y_labels = retention_matrix.index.tolist()
-        cell_tc  = "#0f1117" if not IS_DARK else "#dde3f0"
+        if retention_matrix.empty or retention_matrix.shape[1] == 0:
+            st.info("No retention data available for these categories (no repeat purchases found).")
+        else:
+            retention_matrix.index = pd.to_datetime(retention_matrix.index).strftime("%Y-%m")
 
-        # ── Quick stats row ───────────────────
-        avg_m1 = retention_matrix.iloc[:,0].mean()
-        avg_m3 = retention_matrix.iloc[:,2].mean() if retention_matrix.shape[1] > 2 else 0
-        avg_m6 = retention_matrix.iloc[:,5].mean() if retention_matrix.shape[1] > 5 else 0
-        best_cohort = retention_matrix.iloc[:,0].idxmax()
+            z_vals   = retention_matrix.values
+            x_labels = [f"M+{i}" for i in retention_matrix.columns]
+            y_labels = retention_matrix.index.tolist()
+            cell_tc  = "#0f1117" if not IS_DARK else "#dde3f0"
 
-        sc1, sc2, sc3, sc4 = st.columns(4)
-        for col, lbl, val, color in [
-            (sc1, "Avg M+1 Retention", f"{avg_m1:.1%}", T["accent"]),
-            (sc2, "Avg M+3 Retention", f"{avg_m3:.1%}", "#818cf8"),
-            (sc3, "Avg M+6 Retention", f"{avg_m6:.1%}", "#fb923c"),
-            (sc4, "Best Cohort",       best_cohort,      "#f472b6"),
-        ]:
-            with col:
-                st.markdown(f"""
-                <div style="background:{T['bg_card']};border:1px solid {T['border']};border-radius:10px;
-                    padding:14px 16px;box-shadow:{T['card_shadow']};margin-bottom:14px;
-                    animation:fadeUp 0.4s ease">
-                  <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;
-                      color:{T['text_faint']};font-weight:600;margin-bottom:5px">{lbl}</div>
-                  <div style="font-family:'JetBrains Mono',monospace;font-size:18px;
-                      font-weight:700;color:{color}">{val}</div>
-                </div>""", unsafe_allow_html=True)
+            # ── Quick stats row ───────────────────
+            avg_m1 = retention_matrix.iloc[:,0].mean() if retention_matrix.shape[1] > 0 else 0
+            avg_m3 = retention_matrix.iloc[:,2].mean() if retention_matrix.shape[1] > 2 else 0
+            avg_m6 = retention_matrix.iloc[:,5].mean() if retention_matrix.shape[1] > 5 else 0
+            best_cohort = retention_matrix.iloc[:,0].idxmax() if retention_matrix.shape[1] > 0 else "N/A"
 
-        # ── Heatmap ───────────────────────────
-        fig_heat = go.Figure(go.Heatmap(
-            z=z_vals, x=x_labels, y=y_labels,
-            colorscale=HEATMAP_SCALE, zmin=0, zmax=0.02,
-            text=[[f"{v:.1%}" if not pd.isna(v) else "" for v in row] for row in z_vals],
-            texttemplate="%{text}",
-            textfont=dict(size=9, family="JetBrains Mono", color=cell_tc),
-            hovertemplate="Cohort: <b>%{y}</b><br>%{x}<br>Retention: <b>%{z:.2%}</b><extra></extra>",
-            colorbar=dict(
-                thickness=10, len=0.9,
-                tickfont=dict(size=9, color=T["axis_text"], family="JetBrains Mono"),
-                tickformat=".1%", outlinewidth=0, bgcolor="rgba(0,0,0,0)",
-            ),
-        ))
-        chart_card("Cohort Retention Heatmap", fig_heat, height=620,
-                   margin=dict(l=16, r=60, t=10, b=16),
-                   extra_layout=dict(
-                       xaxis_title="Months Since First Purchase",
-                       yaxis_title="Cohort Month",
-                       xaxis=dict(side="top", tickfont=dict(size=10, family="JetBrains Mono",
-                                                             color=T["axis_text"])),
-                       yaxis=dict(tickfont=dict(size=10, family="JetBrains Mono",
-                                                color=T["axis_text"]), autorange="reversed"),
-                   ))
+            sc1, sc2, sc3, sc4 = st.columns(4)
+            for col, lbl, val, color in [
+                (sc1, "Avg M+1 Retention", f"{avg_m1:.1%}", T["accent"]),
+                (sc2, "Avg M+3 Retention", f"{avg_m3:.1%}", "#818cf8"),
+                (sc3, "Avg M+6 Retention", f"{avg_m6:.1%}", "#fb923c"),
+                (sc4, "Best Cohort",       best_cohort,      "#f472b6"),
+            ]:
+                with col:
+                    st.markdown(f"""
+                    <div style="background:{T['bg_card']};border:1px solid {T['border']};border-radius:10px;
+                        padding:14px 16px;box-shadow:{T['card_shadow']};margin-bottom:14px;
+                        animation:fadeUp 0.4s ease">
+                      <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;
+                          color:{T['text_faint']};font-weight:600;margin-bottom:5px">{lbl}</div>
+                      <div style="font-family:'JetBrains Mono',monospace;font-size:18px;
+                          font-weight:700;color:{color}">{val}</div>
+                    </div>""", unsafe_allow_html=True)
 
-        # ── Retention curves ──────────────────
-        fig_lines = go.Figure()
-        for i, (cohort, row) in enumerate(retention_matrix.iloc[:6].iterrows()):
-            vals = row.dropna()
-            c    = LINE_COLORS[i % len(LINE_COLORS)]
-            fig_lines.add_trace(go.Scatter(
-                x=vals.index.astype(str), y=vals.values, name=cohort,
-                mode="lines+markers",
-                line=dict(color=c, width=2.2, shape="spline"),
-                marker=dict(size=5, color=c, line=dict(width=1.5, color=T["plot_bg"])),
-                hovertemplate=f"<b>{cohort}</b> — %{{x}}: %{{y:.2%}}<extra></extra>",
+            # ── Heatmap ───────────────────────────
+            fig_heat = go.Figure(go.Heatmap(
+                z=z_vals, x=x_labels, y=y_labels,
+                colorscale=HEATMAP_SCALE, zmin=0, zmax=0.02,
+                text=[[f"{v:.1%}" if not pd.isna(v) else "" for v in row] for row in z_vals],
+                texttemplate="%{text}",
+                textfont=dict(size=9, family="JetBrains Mono", color=cell_tc),
+                hovertemplate="Cohort: <b>%{y}</b><br>%{x}<br>Retention: <b>%{z:.2%}</b><extra></extra>",
+                colorbar=dict(
+                    thickness=10, len=0.9,
+                    tickfont=dict(size=9, color=T["axis_text"], family="JetBrains Mono"),
+                    tickformat=".1%", outlinewidth=0, bgcolor="rgba(0,0,0,0)",
+                ),
             ))
-        chart_card("Retention Curves — First 6 Cohorts", fig_lines, height=270,
-                   extra_layout=dict(
-                       yaxis_tickformat=".1%",
-                       xaxis_title="Month Since First Purchase",
-                       yaxis_title="Retention Rate",
-                       legend=dict(orientation="h", yanchor="bottom", y=1.02,
-                                   xanchor="left", x=0, font=dict(size=10.5),
-                                   bgcolor="rgba(0,0,0,0)"),
-                   ))
+            chart_card("Cohort Retention Heatmap", fig_heat, height=620,
+                       margin=dict(l=16, r=60, t=10, b=16),
+                       extra_layout=dict(
+                           xaxis_title="Months Since First Purchase",
+                           yaxis_title="Cohort Month",
+                           xaxis=dict(side="top", tickfont=dict(size=10, family="JetBrains Mono",
+                                                                 color=T["axis_text"])),
+                           yaxis=dict(tickfont=dict(size=10, family="JetBrains Mono",
+                                                    color=T["axis_text"]), autorange="reversed"),
+                       ))
+
+            # ── Retention curves ──────────────────
+            fig_lines = go.Figure()
+            for i, (cohort, row) in enumerate(retention_matrix.iloc[:6].iterrows()):
+                vals = row.dropna()
+                c    = LINE_COLORS[i % len(LINE_COLORS)]
+                fig_lines.add_trace(go.Scatter(
+                    x=vals.index.astype(str), y=vals.values, name=cohort,
+                    mode="lines+markers",
+                    line=dict(color=c, width=2.2, shape="spline"),
+                    marker=dict(size=5, color=c, line=dict(width=1.5, color=T["plot_bg"])),
+                    hovertemplate=f"<b>{cohort}</b> — %{{x}}: %{{y:.2%}}<extra></extra>",
+                ))
+            chart_card("Retention Curves — First 6 Cohorts", fig_lines, height=270,
+                       extra_layout=dict(
+                           yaxis_tickformat=".1%",
+                           xaxis_title="Month Since First Purchase",
+                           yaxis_title="Retention Rate",
+                           legend=dict(orientation="h", yanchor="bottom", y=1.02,
+                                       xanchor="left", x=0, font=dict(size=10.5),
+                                       bgcolor="rgba(0,0,0,0)"),
+                       ))
