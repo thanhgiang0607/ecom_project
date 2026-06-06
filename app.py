@@ -969,7 +969,7 @@ with tab2:
         valid_order_cust_ids = df_f["customer_id"].unique()
         valid_unique_ids = df_rfm[df_rfm["customer_id"].isin(valid_order_cust_ids)]["customer_unique_id"].unique()
         seg_ai_df = seg_ai_df[seg_ai_df["customer_unique_id"].isin(valid_unique_ids)]
-    if len(seg_ai-df) == 0:
+    if len(seg_ai_df) == 0:
         seg_ai_df = pd.merge(seg_df, df_recs, on='customer_unique_id', how='left').head(5) 
     with col_s1:
         st.markdown(f"""
