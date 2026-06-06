@@ -965,7 +965,7 @@ with tab2:
     if "customer_unique_id" in df_f.columns:
         valid_cust_ids = df_f["customer_unique_id"].unique()
         seg_ai_df = seg_ai_df[seg_ai_df["customer_unique_id"].isin(valid_cust_ids)]
-    elif "customer_unique_id" in df_f.columns:
+    elif "customer_id" in df_f.columns:
         valid_order_cust_ids = df_f["customer_id"].unique()
         valid_unique_ids = df_rfm[df_rfm["customer_id"].isin(valid_order_cust_ids)]["customer_unique_id"].unique()
         seg_ai_df = seg_ai_df[seg_ai_df["customer_unique_id"].isin(valid_unique_ids)]
