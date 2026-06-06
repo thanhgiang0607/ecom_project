@@ -962,18 +962,7 @@ with tab2:
     seg_color = SEG_COLORS.get(selected_seg, T["accent"])
 
     seg_ai_df = pd.merge(seg_df, df_recs, on='customer_unique_id', how='left')
-    if "customer_unique_id" in df_f.columns:
-        valid_cust_ids = df_f["customer_unique_id"].unique()
-        seg_ai_df = seg_ai_df[seg_ai_df["customer_unique_id"].isin(valid_cust_ids)]
-    elif "customer_id" in df_f.columns:
-        valid_order_ids = df_f["customer_id"].unique()
-        if "customer_unique_id" in df_marts.columns:
-            valid_unique_ids = df_marts[df_marts["customer_id"].isin(valid_order_ids)]["customer_unique_id"].unique()
-        else: 
-            valid_unique_ids = df_recs["customer_unique_id"].unique()
-        seg_ai_df = seg_ai_df[seg_ai_df["customer_unique_id"].isin(valid_unique_ids)]
-    if len(seg_ai_df) == 0:
-        seg_ai_df = pd.merge(seg_df, df_recs, on='customer_unique_id', how='left').head(5) 
+    
     with col_s1:
         st.markdown(f"""
         <div style="background:{T['bg_card2']};border:1px solid {T['border']};border-radius:8px;padding:12px 14px">
