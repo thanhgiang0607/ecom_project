@@ -951,7 +951,7 @@ with tab2:
 
     # ── Segment explorer ──────────────────
     st.markdown(
-        f'<div class="chart-section"><div class="sec-head">🧠 AI-Powered Customer Intelligence Explorer</div>',
+        f'<div class="chart-section"><div class="sec-head">AI-Powered Customer Intelligence Explorer</div>',
         unsafe_allow_html=True)
         
     col_sel, col_s1, col_s2, col_s3 = st.columns([2, 1, 1, 1])
@@ -1009,7 +1009,7 @@ with tab2:
                 color="AI Count", color_continuous_scale=BAR_SCALE
             )
             fig_rec_bar.update_layout(coloraxis_showscale=False, yaxis_title=None, xaxis_title=None)
-            chart_card("🎯 Top 5 AI Next-Purchase Recommendations", fig_rec_bar, height=190)
+            chart_card(" Top 5 AI Next-Purchase Recommendations", fig_rec_bar, height=190)
         else:
             st.write("Missing Recommendation Data")
 
