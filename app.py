@@ -1022,7 +1022,7 @@ with tab2:
         
     st.dataframe(
         seg_ai_df[["customer_unique_id", "RFM_Score", "Churn Risk", "ai_recommendations"]]
-        .rename(columns={"ai_recommendations": "🎯 AI Personalized Recommendations"})
+        .rename(columns={"ai_recommendations": "AI Personalized Recommendations"})
         .sort_values("Churn Risk", ascending=False)
         .head(30)
         .reset_index(drop=True),
