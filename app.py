@@ -524,6 +524,7 @@ SEG_COLORS = {
     "Lost":                "#dc2626" if not IS_DARK else "#f87171",
     "New Customers":       "#ca8a04" if not IS_DARK else "#facc15",
     "Hibernating":         "#64748b",
+    "Can't Lose Them":     "#c084fc",
 }
 LINE_COLORS = list(SEG_COLORS.values())[:6]
 
@@ -549,21 +550,84 @@ def chart_card(title: str, fig, height=300, margin=None, extra_layout=None):
 
 
 # ══════════════════════════════════════════
-# 5. DATA
+# 5. DATA & ANALYTICS HELPERS
 # ══════════════════════════════════════════
 DB_PATH = "/Users/ciaranguyen/Documents/ecom_project/dev.duckdb"
 
 @st.cache_data
+def get_rfm_data(df, reference_date):
+    if df.empty:
+        return pd.DataFrame()
+        
+    rfm = df.groupby("customer_unique_id").agg({
+        "purchase_at": lambda x: (reference_date - x.max()).days,
+        "order_id": "nunique",
+        "total_amount_paid": "sum"
+    }).reset_index()
+    
+    rfm.columns = ["customer_unique_id", "recency", "frequency", "monetary"]
+    
+    # Scoring
+    try:
+        rfm["R_score"] = pd.qcut(rfm["recency"], 5, labels=[5, 4, 3, 2, 1])
+    except:
+        rfm["R_score"] = pd.cut(rfm["recency"], bins=5, labels=[5, 4, 3, 2, 1])
+        
+    try:
+        rfm["M_score"] = pd.qcut(rfm["monetary"], 5, labels=[1, 2, 3, 4, 5])
+    except:
+        rfm["M_score"] = pd.cut(rfm["monetary"], bins=5, labels=[1, 2, 3, 4, 5])
+        
+    rfm["F_score"] = rfm["frequency"].apply(lambda x: 1 if x == 1 else (2 if x == 2 else 3))
+    
+    def segment_customer(x):
+        r, f = int(x["R_score"]), int(x["F_score"])
+        if r >= 4 and f >= 2: return "Champions"
+        if r >= 3 and f >= 2: return "Loyal Customers"
+        if r >= 4 and f == 1: return "New Customers"
+        if r == 3 and f == 1: return "Potential Loyalists"
+        if r == 2 and f == 1: return "At Risk"
+        if r == 1 and f >= 2: return "Can't Lose Them"
+        if r == 1 and f == 1: return "Hibernating"
+        return "Lost"
+
+    rfm["Segment"] = rfm.apply(segment_customer, axis=1)
+    rfm["RFM_Score"] = rfm["R_score"].astype(str) + rfm["F_score"].astype(str) + rfm["M_score"].astype(str)
+    return rfm
+
+@st.cache_data
+def get_cohort_data(df):
+    if df.empty:
+        return pd.DataFrame()
+        
+    first_purchase = df.groupby("customer_unique_id")["purchase_at"].min().reset_index()
+    first_purchase.columns = ["customer_unique_id", "first_purchase_date"]
+    
+    df_c = df.merge(first_purchase, on="customer_unique_id")
+    df_c["cohort_month"] = df_c["first_purchase_date"].dt.to_period("M").dt.to_timestamp()
+    df_c["order_month"] = df_c["purchase_at"].dt.to_period("M").dt.to_timestamp()
+    
+    df_c["cohort_index"] = (df_c["order_month"].dt.year - df_c["cohort_month"].dt.year) * 12 + \
+                           (df_c["order_month"].dt.month - df_c["cohort_month"].dt.month)
+    
+    cohort_data = df_c.groupby(["cohort_month", "cohort_index"])["customer_unique_id"].nunique().reset_index()
+    cohort_data.columns = ["cohort_month", "cohort_index", "unique_customers"]
+    return cohort_data
+
 @st.cache_data
 def load_data():
     marts  = pd.read_csv("marts_data.csv")
     rfm    = pd.read_csv("rfm_data.csv")
-    cohort = pd.read_csv("cohort_data.csv")
-    recs = pd.read_csv("recommendations_data.csv")
+    recs   = pd.read_csv("recommendations_data.csv")
+    
+    # Important: Join customer_unique_id for dynamic RFM/Cohort
+    customers = pd.read_csv("data/raw/olist_customers_dataset.csv")
+    marts = marts.merge(customers[["customer_id", "customer_unique_id", "customer_state"]], on="customer_id", how="left")
+    
     marts["purchase_at"] = pd.to_datetime(marts["purchase_at"])
-    return marts, rfm, cohort,recs
+    return marts, rfm, recs
 
-df_marts, df_rfm, df_cohort, df_recs = load_data()
+df_marts, df_rfm_raw, df_recs = load_data()
 
 
 # ══════════════════════════════════════════
@@ -650,6 +714,16 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 df_f = df_marts[df_marts["product_category"].isin(selected_cats)]
+
+# Recalculate RFM and Cohort based on filtered data
+with st.spinner("Recalculating segments..."):
+    df_rfm = get_rfm_data(df_f, df_marts["purchase_at"].max())
+    if not df_rfm.empty:
+        # Join churn risk from original model if available
+        df_rfm = df_rfm.merge(df_rfm_raw[["customer_unique_id", "churn_risk_probability"]], 
+                               on="customer_unique_id", how="left")
+    
+    df_cohort = get_cohort_data(df_f)
 
 
 # ══════════════════════════════════════════
@@ -890,8 +964,10 @@ with tab1:
 # TAB 2 — RFM SEGMENTS
 # ──────────────────────────────────────────
 with tab2:
-
-    # ── Segment summary chips ─────────────
+    if df_rfm.empty:
+        st.warning("No data available for the selected categories.")
+    else:
+        # ── Segment summary chips ─────────────
     df_rfm_counts = (df_rfm["Segment"].value_counts().reset_index()
                      .rename(columns={"count": "Customer Count"})
                      .sort_values("Customer Count", ascending=False))
@@ -1035,13 +1111,15 @@ with tab2:
 # TAB 3 — COHORT RETENTION
 # ──────────────────────────────────────────
 with tab3:
-
-    st.markdown(f"""
-    <div class="cohort-info">
-      <span style="font-size:16px">💡</span>
-      <span><b>Cách đọc:</b> Mỗi hàng là nhóm khách hàng mua lần đầu trong tháng đó.
-      Màu sắc biểu thị tỉ lệ khách quay lại ở các tháng tiếp theo.</span>
-    </div>""", unsafe_allow_html=True)
+    if df_cohort.empty:
+        st.warning("No data available for the selected categories.")
+    else:
+        st.markdown(f"""
+        <div class="cohort-info">
+          <span style="font-size:16px">💡</span>
+          <span><b>Cách đọc:</b> Mỗi hàng là nhóm khách hàng mua lần đầu trong tháng đó.
+          Màu sắc biểu thị tỉ lệ khách quay lại ở các tháng tiếp theo.</span>
+        </div>""", unsafe_allow_html=True)
 
     cohort_pivot     = df_cohort.pivot(index="cohort_month", columns="cohort_index",
                                        values="unique_customers")
