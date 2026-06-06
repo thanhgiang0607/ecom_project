@@ -968,143 +968,143 @@ with tab2:
         st.warning("No data available for the selected categories.")
     else:
         # ── Segment summary chips ─────────────
-    df_rfm_counts = (df_rfm["Segment"].value_counts().reset_index()
-                     .rename(columns={"count": "Customer Count"})
-                     .sort_values("Customer Count", ascending=False))
-    chips_html = "<div style='display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px'>"
-    for _, row in df_rfm_counts.iterrows():
-        seg   = row["Segment"]
-        cnt   = row["Customer Count"]
-        color = SEG_COLORS.get(seg, "#6b7a99")
-        chips_html += f"""
-        <div style="display:inline-flex;align-items:center;gap:6px;
-            padding:5px 12px;border-radius:20px;
-            background:rgba({','.join(str(int(color.lstrip('#')[i:i+2],16)) for i in (0,2,4))},0.12);
-            border:1px solid rgba({','.join(str(int(color.lstrip('#')[i:i+2],16)) for i in (0,2,4))},0.3);
-            font-size:11px;color:{color};font-weight:500">
-          <span style="width:6px;height:6px;background:{color};border-radius:50%;flex-shrink:0"></span>
-          {seg} <span style="font-family:'JetBrains Mono',monospace;opacity:0.7">{cnt:,}</span>
-        </div>"""
-    chips_html += "</div>"
-    st.markdown(chips_html, unsafe_allow_html=True)
+        df_rfm_counts = (df_rfm["Segment"].value_counts().reset_index()
+                         .rename(columns={"count": "Customer Count"})
+                         .sort_values("Customer Count", ascending=False))
+        chips_html = "<div style='display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px'>"
+        for _, row in df_rfm_counts.iterrows():
+            seg   = row["Segment"]
+            cnt   = row["Customer Count"]
+            color = SEG_COLORS.get(seg, "#6b7a99")
+            chips_html += f"""
+            <div style="display:inline-flex;align-items:center;gap:6px;
+                padding:5px 12px;border-radius:20px;
+                background:rgba({','.join(str(int(color.lstrip('#')[i:i+2],16)) for i in (0,2,4))},0.12);
+                border:1px solid rgba({','.join(str(int(color.lstrip('#')[i:i+2],16)) for i in (0,2,4))},0.3);
+                font-size:11px;color:{color};font-weight:500">
+              <span style="width:6px;height:6px;background:{color};border-radius:50%;flex-shrink:0"></span>
+              {seg} <span style="font-family:'JetBrains Mono',monospace;opacity:0.7">{cnt:,}</span>
+            </div>"""
+        chips_html += "</div>"
+        st.markdown(chips_html, unsafe_allow_html=True)
 
-    # ── Segment bar chart ─────────────────
-    bar_colors = [SEG_COLORS.get(s, "#6b7a99")
-                  for s in df_rfm_counts.sort_values("Customer Count", ascending=True)["Segment"]]
-    df_sorted  = df_rfm_counts.sort_values("Customer Count", ascending=True)
-    fig_seg = go.Figure(go.Bar(
-        x=df_sorted["Customer Count"], y=df_sorted["Segment"],
-        orientation="h", marker_color=bar_colors, marker_line_width=0,
-        text=df_sorted["Customer Count"].apply(lambda x: f"{x:,}"),
-        textposition="outside",
-        textfont=dict(size=10, color=T["axis_text"], family="JetBrains Mono"),
-        hovertemplate="<b>%{y}</b><br>%{x:,} customers<extra></extra>",
-    ))
-    chart_card("Customer Segment Distribution", fig_seg, height=300,
-               extra_layout=dict(xaxis_title=None, yaxis_title=None,
-                                  xaxis=dict(showgrid=False, showticklabels=False),
-                                  bargap=0.35))
+        # ── Segment bar chart ─────────────────
+        bar_colors = [SEG_COLORS.get(s, "#6b7a99")
+                      for s in df_rfm_counts.sort_values("Customer Count", ascending=True)["Segment"]]
+        df_sorted  = df_rfm_counts.sort_values("Customer Count", ascending=True)
+        fig_seg = go.Figure(go.Bar(
+            x=df_sorted["Customer Count"], y=df_sorted["Segment"],
+            orientation="h", marker_color=bar_colors, marker_line_width=0,
+            text=df_sorted["Customer Count"].apply(lambda x: f"{x:,}"),
+            textposition="outside",
+            textfont=dict(size=10, color=T["axis_text"], family="JetBrains Mono"),
+            hovertemplate="<b>%{y}</b><br>%{x:,} customers<extra></extra>",
+        ))
+        chart_card("Customer Segment Distribution", fig_seg, height=300,
+                   extra_layout=dict(xaxis_title=None, yaxis_title=None,
+                                      xaxis=dict(showgrid=False, showticklabels=False),
+                                      bargap=0.35))
 
-    # ── RFM Scatter ───────────────────────
-    df_scatter = df_rfm.copy()
-    df_scatter["monetary_norm"] = (df_scatter["monetary"] / df_scatter["monetary"].max()) * 32 + 4
-    fig_sc = px.scatter(
-        df_scatter.sample(min(2000, len(df_scatter))),
-        x="recency", y="monetary", size="monetary_norm",
-        color="Segment", color_discrete_map=SEG_COLORS,
-        hover_data={"customer_unique_id": True, "frequency": True,
-                    "RFM_Score": True, "monetary_norm": False},
-        opacity=0.72,
-    )
-    fig_sc.update_traces(marker_line_width=0)
-    chart_card("RFM Value Map — Recency vs Monetary (bubble = Frequency)",
-               fig_sc, height=370,
-               extra_layout=dict(
-                   xaxis_title="Recency (days)", yaxis_title="Monetary ($)",
-                   legend=dict(orientation="h", yanchor="bottom", y=1.01, xanchor="left", x=0,
-                               font=dict(size=10.5), bgcolor="rgba(0,0,0,0)", borderwidth=0),
-               ))
+        # ── RFM Scatter ───────────────────────
+        df_scatter = df_rfm.copy()
+        df_scatter["monetary_norm"] = (df_scatter["monetary"] / df_scatter["monetary"].max()) * 32 + 4
+        fig_sc = px.scatter(
+            df_scatter.sample(min(2000, len(df_scatter))),
+            x="recency", y="monetary", size="monetary_norm",
+            color="Segment", color_discrete_map=SEG_COLORS,
+            hover_data={"customer_unique_id": True, "frequency": True,
+                        "RFM_Score": True, "monetary_norm": False},
+            opacity=0.72,
+        )
+        fig_sc.update_traces(marker_line_width=0)
+        chart_card("RFM Value Map — Recency vs Monetary (bubble = Frequency)",
+                   fig_sc, height=370,
+                   extra_layout=dict(
+                       xaxis_title="Recency (days)", yaxis_title="Monetary ($)",
+                       legend=dict(orientation="h", yanchor="bottom", y=1.01, xanchor="left", x=0,
+                                   font=dict(size=10.5), bgcolor="rgba(0,0,0,0)", borderwidth=0),
+                   ))
 
-    # ── Segment explorer ──────────────────
-    st.markdown(
-        f'<div class="chart-section"><div class="sec-head">AI-Powered Customer Intelligence Explorer</div>',
-        unsafe_allow_html=True)
-        
-    col_sel, col_s1, col_s2, col_s3 = st.columns([2, 1, 1, 1])
-    with col_sel:
-        selected_seg = st.selectbox("seg", df_rfm["Segment"].unique(), label_visibility="collapsed")
-        
-    seg_df = df_rfm[df_rfm["Segment"] == selected_seg]
-    seg_color = SEG_COLORS.get(selected_seg, T["accent"])
-
-    seg_ai_df = pd.merge(seg_df, df_recs, on='customer_unique_id', how='left')
-    
-    with col_s1:
-        st.markdown(f"""
-        <div style="background:{T['bg_card2']};border:1px solid {T['border']};border-radius:8px;padding:12px 14px">
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:{T['text_faint']};margin-bottom:4px">CUSTOMERS</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:{seg_color}">{len(seg_ai_df):,}</div>
-        </div>""", unsafe_allow_html=True)
-    with col_s2:
-        avg_churn_seg = seg_ai_df['churn_risk_probability'].mean() if 'churn_risk_probability' in seg_ai_df.columns else 0.35
-        st.markdown(f"""
-        <div style="background:{T['bg_card2']};border:1px solid {T['border']};border-radius:8px;padding:12px 14px">
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:{T['text_faint']};margin-bottom:4px">AVG CHURN RISK</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:{'#f87171' if avg_churn_seg > 0.5 else '#5eead4'}">{avg_churn_seg:.1%}</div>
-        </div>""", unsafe_allow_html=True)
-    with col_s3:
-        st.markdown(f"""
-        <div style="background:{T['bg_card2']};border:1px solid {T['border']};border-radius:8px;padding:12px 14px">
-          <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:{T['text_faint']};margin-bottom:4px">AVG MONETARY</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:{seg_color}">${seg_ai_df['monetary'].mean():,.0f}</div>
-        </div>""", unsafe_allow_html=True)
-
-    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
-
-    col_g1, col_g2 = st.columns([2, 3])
-    
-    with col_g1:
-        if 'churn_risk_probability' in seg_ai_df.columns:
-            fig_churn_hist = px.histogram(
-                seg_ai_df, x="churn_risk_probability", nbins=15,
-                color_discrete_sequence=[seg_color]
-            )
-            fig_churn_hist.update_layout(xaxis_tickformat=".0%", showlegend=False, xaxis_title=None, yaxis_title="Cust Count")
-            chart_card(" Churn Risk Score Distribution", fig_churn_hist, height=190)
-        else:
-            st.write("Missing Churn Data")
-
-    with col_g2:
-        if 'ai_recommendations' in seg_ai_df.columns:
-            all_recs = seg_ai_df['ai_recommendations'].dropna().str.split(', ').explode()
-            df_top_recs = all_recs.value_counts().reset_index().head(5)
-            df_top_recs.columns = ['Product Category', 'AI Count']
+        # ── Segment explorer ──────────────────
+        st.markdown(
+            f'<div class="chart-section"><div class="sec-head">AI-Powered Customer Intelligence Explorer</div>',
+            unsafe_allow_html=True)
             
-            fig_rec_bar = px.bar(
-                df_top_recs, x="AI Count", y="Product Category", orientation="h",
-                color="AI Count", color_continuous_scale=BAR_SCALE
-            )
-            fig_rec_bar.update_layout(coloraxis_showscale=False, yaxis_title=None, xaxis_title=None)
-            chart_card(" Top 5 AI Next-Purchase Recommendations", fig_rec_bar, height=190)
-        else:
-            st.write("Missing Recommendation Data")
+        col_sel, col_s1, col_s2, col_s3 = st.columns([2, 1, 1, 1])
+        with col_sel:
+            selected_seg = st.selectbox("seg", df_rfm["Segment"].unique(), label_visibility="collapsed")
+            
+        seg_df = df_rfm[df_rfm["Segment"] == selected_seg]
+        seg_color = SEG_COLORS.get(selected_seg, T["accent"])
 
-    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
-    
-    if 'churn_risk_probability' in seg_ai_df.columns:
-        seg_ai_df['Churn Risk'] = seg_ai_df['churn_risk_probability'].apply(lambda x: f"{x:.1%}")
-    else:
-        seg_ai_df['Churn Risk'] = "30.0%"
+        seg_ai_df = pd.merge(seg_df, df_recs, on='customer_unique_id', how='left')
         
-    st.dataframe(
-        seg_ai_df[["customer_unique_id", "RFM_Score", "Churn Risk", "ai_recommendations"]]
-        .rename(columns={"ai_recommendations": "AI Personalized Recommendations"})
-        .sort_values("Churn Risk", ascending=False)
-        .head(30)
-        .reset_index(drop=True),
-        use_container_width=True, hide_index=True,
-    )
-    st.markdown("</div>", unsafe_allow_html=True)
+        with col_s1:
+            st.markdown(f"""
+            <div style="background:{T['bg_card2']};border:1px solid {T['border']};border-radius:8px;padding:12px 14px">
+              <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:{T['text_faint']};margin-bottom:4px">CUSTOMERS</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:{seg_color}">{len(seg_ai_df):,}</div>
+            </div>""", unsafe_allow_html=True)
+        with col_s2:
+            avg_churn_seg = seg_ai_df['churn_risk_probability'].mean() if 'churn_risk_probability' in seg_ai_df.columns else 0.35
+            st.markdown(f"""
+            <div style="background:{T['bg_card2']};border:1px solid {T['border']};border-radius:8px;padding:12px 14px">
+              <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:{T['text_faint']};margin-bottom:4px">AVG CHURN RISK</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:{'#f87171' if avg_churn_seg > 0.5 else '#5eead4'}">{avg_churn_seg:.1%}</div>
+            </div>""", unsafe_allow_html=True)
+        with col_s3:
+            st.markdown(f"""
+            <div style="background:{T['bg_card2']};border:1px solid {T['border']};border-radius:8px;padding:12px 14px">
+              <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;color:{T['text_faint']};margin-bottom:4px">AVG MONETARY</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:{seg_color}">${seg_ai_df['monetary'].mean():,.0f}</div>
+            </div>""", unsafe_allow_html=True)
+
+        st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+
+        col_g1, col_g2 = st.columns([2, 3])
+        
+        with col_g1:
+            if 'churn_risk_probability' in seg_ai_df.columns:
+                fig_churn_hist = px.histogram(
+                    seg_ai_df, x="churn_risk_probability", nbins=15,
+                    color_discrete_sequence=[seg_color]
+                )
+                fig_churn_hist.update_layout(xaxis_tickformat=".0%", showlegend=False, xaxis_title=None, yaxis_title="Cust Count")
+                chart_card(" Churn Risk Score Distribution", fig_churn_hist, height=190)
+            else:
+                st.write("Missing Churn Data")
+
+        with col_g2:
+            if 'ai_recommendations' in seg_ai_df.columns:
+                all_recs = seg_ai_df['ai_recommendations'].dropna().str.split(', ').explode()
+                df_top_recs = all_recs.value_counts().reset_index().head(5)
+                df_top_recs.columns = ['Product Category', 'AI Count']
+                
+                fig_rec_bar = px.bar(
+                    df_top_recs, x="AI Count", y="Product Category", orientation="h",
+                    color="AI Count", color_continuous_scale=BAR_SCALE
+                )
+                fig_rec_bar.update_layout(coloraxis_showscale=False, yaxis_title=None, xaxis_title=None)
+                chart_card(" Top 5 AI Next-Purchase Recommendations", fig_rec_bar, height=190)
+            else:
+                st.write("Missing Recommendation Data")
+
+        st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
+        
+        if 'churn_risk_probability' in seg_ai_df.columns:
+            seg_ai_df['Churn Risk'] = seg_ai_df['churn_risk_probability'].apply(lambda x: f"{x:.1%}")
+        else:
+            seg_ai_df['Churn Risk'] = "30.0%"
+            
+        st.dataframe(
+            seg_ai_df[["customer_unique_id", "RFM_Score", "Churn Risk", "ai_recommendations"]]
+            .rename(columns={"ai_recommendations": "AI Personalized Recommendations"})
+            .sort_values("Churn Risk", ascending=False)
+            .head(30)
+            .reset_index(drop=True),
+            use_container_width=True, hide_index=True,
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ──────────────────────────────────────────
@@ -1121,84 +1121,84 @@ with tab3:
           Màu sắc biểu thị tỉ lệ khách quay lại ở các tháng tiếp theo.</span>
         </div>""", unsafe_allow_html=True)
 
-    cohort_pivot     = df_cohort.pivot(index="cohort_month", columns="cohort_index",
-                                       values="unique_customers")
-    cohort_sizes     = cohort_pivot.iloc[:, 0]
-    retention_matrix = cohort_pivot.divide(cohort_sizes, axis=0).iloc[:, 1:13]
-    retention_matrix.index = pd.to_datetime(retention_matrix.index).strftime("%Y-%m")
+        cohort_pivot     = df_cohort.pivot(index="cohort_month", columns="cohort_index",
+                                           values="unique_customers")
+        cohort_sizes     = cohort_pivot.iloc[:, 0]
+        retention_matrix = cohort_pivot.divide(cohort_sizes, axis=0).iloc[:, 1:13]
+        retention_matrix.index = pd.to_datetime(retention_matrix.index).strftime("%Y-%m")
 
-    z_vals   = retention_matrix.values
-    x_labels = [f"M+{i}" for i in retention_matrix.columns]
-    y_labels = retention_matrix.index.tolist()
-    cell_tc  = "#0f1117" if not IS_DARK else "#dde3f0"
+        z_vals   = retention_matrix.values
+        x_labels = [f"M+{i}" for i in retention_matrix.columns]
+        y_labels = retention_matrix.index.tolist()
+        cell_tc  = "#0f1117" if not IS_DARK else "#dde3f0"
 
-    # ── Quick stats row ───────────────────
-    avg_m1 = retention_matrix.iloc[:,0].mean()
-    avg_m3 = retention_matrix.iloc[:,2].mean() if retention_matrix.shape[1] > 2 else 0
-    avg_m6 = retention_matrix.iloc[:,5].mean() if retention_matrix.shape[1] > 5 else 0
-    best_cohort = retention_matrix.iloc[:,0].idxmax()
+        # ── Quick stats row ───────────────────
+        avg_m1 = retention_matrix.iloc[:,0].mean()
+        avg_m3 = retention_matrix.iloc[:,2].mean() if retention_matrix.shape[1] > 2 else 0
+        avg_m6 = retention_matrix.iloc[:,5].mean() if retention_matrix.shape[1] > 5 else 0
+        best_cohort = retention_matrix.iloc[:,0].idxmax()
 
-    sc1, sc2, sc3, sc4 = st.columns(4)
-    for col, lbl, val, color in [
-        (sc1, "Avg M+1 Retention", f"{avg_m1:.1%}", T["accent"]),
-        (sc2, "Avg M+3 Retention", f"{avg_m3:.1%}", "#818cf8"),
-        (sc3, "Avg M+6 Retention", f"{avg_m6:.1%}", "#fb923c"),
-        (sc4, "Best Cohort",       best_cohort,      "#f472b6"),
-    ]:
-        with col:
-            st.markdown(f"""
-            <div style="background:{T['bg_card']};border:1px solid {T['border']};border-radius:10px;
-                padding:14px 16px;box-shadow:{T['card_shadow']};margin-bottom:14px;
-                animation:fadeUp 0.4s ease">
-              <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;
-                  color:{T['text_faint']};font-weight:600;margin-bottom:5px">{lbl}</div>
-              <div style="font-family:'JetBrains Mono',monospace;font-size:18px;
-                  font-weight:700;color:{color}">{val}</div>
-            </div>""", unsafe_allow_html=True)
+        sc1, sc2, sc3, sc4 = st.columns(4)
+        for col, lbl, val, color in [
+            (sc1, "Avg M+1 Retention", f"{avg_m1:.1%}", T["accent"]),
+            (sc2, "Avg M+3 Retention", f"{avg_m3:.1%}", "#818cf8"),
+            (sc3, "Avg M+6 Retention", f"{avg_m6:.1%}", "#fb923c"),
+            (sc4, "Best Cohort",       best_cohort,      "#f472b6"),
+        ]:
+            with col:
+                st.markdown(f"""
+                <div style="background:{T['bg_card']};border:1px solid {T['border']};border-radius:10px;
+                    padding:14px 16px;box-shadow:{T['card_shadow']};margin-bottom:14px;
+                    animation:fadeUp 0.4s ease">
+                  <div style="font-size:9px;text-transform:uppercase;letter-spacing:1px;
+                      color:{T['text_faint']};font-weight:600;margin-bottom:5px">{lbl}</div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:18px;
+                      font-weight:700;color:{color}">{val}</div>
+                </div>""", unsafe_allow_html=True)
 
-    # ── Heatmap ───────────────────────────
-    fig_heat = go.Figure(go.Heatmap(
-        z=z_vals, x=x_labels, y=y_labels,
-        colorscale=HEATMAP_SCALE, zmin=0, zmax=0.02,
-        text=[[f"{v:.1%}" if not pd.isna(v) else "" for v in row] for row in z_vals],
-        texttemplate="%{text}",
-        textfont=dict(size=9, family="JetBrains Mono", color=cell_tc),
-        hovertemplate="Cohort: <b>%{y}</b><br>%{x}<br>Retention: <b>%{z:.2%}</b><extra></extra>",
-        colorbar=dict(
-            thickness=10, len=0.9,
-            tickfont=dict(size=9, color=T["axis_text"], family="JetBrains Mono"),
-            tickformat=".1%", outlinewidth=0, bgcolor="rgba(0,0,0,0)",
-        ),
-    ))
-    chart_card("Cohort Retention Heatmap", fig_heat, height=620,
-               margin=dict(l=16, r=60, t=10, b=16),
-               extra_layout=dict(
-                   xaxis_title="Months Since First Purchase",
-                   yaxis_title="Cohort Month",
-                   xaxis=dict(side="top", tickfont=dict(size=10, family="JetBrains Mono",
-                                                         color=T["axis_text"])),
-                   yaxis=dict(tickfont=dict(size=10, family="JetBrains Mono",
-                                            color=T["axis_text"]), autorange="reversed"),
-               ))
-
-    # ── Retention curves ──────────────────
-    fig_lines = go.Figure()
-    for i, (cohort, row) in enumerate(retention_matrix.iloc[:6].iterrows()):
-        vals = row.dropna()
-        c    = LINE_COLORS[i % len(LINE_COLORS)]
-        fig_lines.add_trace(go.Scatter(
-            x=vals.index.astype(str), y=vals.values, name=cohort,
-            mode="lines+markers",
-            line=dict(color=c, width=2.2, shape="spline"),
-            marker=dict(size=5, color=c, line=dict(width=1.5, color=T["plot_bg"])),
-            hovertemplate=f"<b>{cohort}</b> — %{{x}}: %{{y:.2%}}<extra></extra>",
+        # ── Heatmap ───────────────────────────
+        fig_heat = go.Figure(go.Heatmap(
+            z=z_vals, x=x_labels, y=y_labels,
+            colorscale=HEATMAP_SCALE, zmin=0, zmax=0.02,
+            text=[[f"{v:.1%}" if not pd.isna(v) else "" for v in row] for row in z_vals],
+            texttemplate="%{text}",
+            textfont=dict(size=9, family="JetBrains Mono", color=cell_tc),
+            hovertemplate="Cohort: <b>%{y}</b><br>%{x}<br>Retention: <b>%{z:.2%}</b><extra></extra>",
+            colorbar=dict(
+                thickness=10, len=0.9,
+                tickfont=dict(size=9, color=T["axis_text"], family="JetBrains Mono"),
+                tickformat=".1%", outlinewidth=0, bgcolor="rgba(0,0,0,0)",
+            ),
         ))
-    chart_card("Retention Curves — First 6 Cohorts", fig_lines, height=270,
-               extra_layout=dict(
-                   yaxis_tickformat=".1%",
-                   xaxis_title="Month Since First Purchase",
-                   yaxis_title="Retention Rate",
-                   legend=dict(orientation="h", yanchor="bottom", y=1.02,
-                               xanchor="left", x=0, font=dict(size=10.5),
-                               bgcolor="rgba(0,0,0,0)"),
-               ))
+        chart_card("Cohort Retention Heatmap", fig_heat, height=620,
+                   margin=dict(l=16, r=60, t=10, b=16),
+                   extra_layout=dict(
+                       xaxis_title="Months Since First Purchase",
+                       yaxis_title="Cohort Month",
+                       xaxis=dict(side="top", tickfont=dict(size=10, family="JetBrains Mono",
+                                                             color=T["axis_text"])),
+                       yaxis=dict(tickfont=dict(size=10, family="JetBrains Mono",
+                                                color=T["axis_text"]), autorange="reversed"),
+                   ))
+
+        # ── Retention curves ──────────────────
+        fig_lines = go.Figure()
+        for i, (cohort, row) in enumerate(retention_matrix.iloc[:6].iterrows()):
+            vals = row.dropna()
+            c    = LINE_COLORS[i % len(LINE_COLORS)]
+            fig_lines.add_trace(go.Scatter(
+                x=vals.index.astype(str), y=vals.values, name=cohort,
+                mode="lines+markers",
+                line=dict(color=c, width=2.2, shape="spline"),
+                marker=dict(size=5, color=c, line=dict(width=1.5, color=T["plot_bg"])),
+                hovertemplate=f"<b>{cohort}</b> — %{{x}}: %{{y:.2%}}<extra></extra>",
+            ))
+        chart_card("Retention Curves — First 6 Cohorts", fig_lines, height=270,
+                   extra_layout=dict(
+                       yaxis_tickformat=".1%",
+                       xaxis_title="Month Since First Purchase",
+                       yaxis_title="Retention Rate",
+                       legend=dict(orientation="h", yanchor="bottom", y=1.02,
+                                   xanchor="left", x=0, font=dict(size=10.5),
+                                   bgcolor="rgba(0,0,0,0)"),
+                   ))
