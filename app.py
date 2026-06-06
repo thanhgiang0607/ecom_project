@@ -962,6 +962,8 @@ with tab2:
     seg_color = SEG_COLORS.get(selected_seg, T["accent"])
 
     seg_ai_df = pd.merge(seg_df, df_recs, on='customer_unique_id', how='left')
+    valid_cust_ids = df_f["customer_unique_id"].unique() if "customer_unique_id" in df_f.columns else df_f["customer_id"].unique()
+    seg_ai_df = seg_ai_df[seg_ai_df["customer_unique_id"].isin(valid_cust_ids)]
 
     with col_s1:
         st.markdown(f"""
@@ -994,7 +996,7 @@ with tab2:
                 color_discrete_sequence=[seg_color]
             )
             fig_churn_hist.update_layout(xaxis_tickformat=".0%", showlegend=False, xaxis_title=None, yaxis_title="Cust Count")
-            chart_card("📊 Churn Risk Score Distribution", fig_churn_hist, height=190)
+            chart_card(" Churn Risk Score Distribution", fig_churn_hist, height=190)
         else:
             st.write("Missing Churn Data")
 
