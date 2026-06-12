@@ -84,194 +84,108 @@ The project addresses three key business questions:
 ecom_project/
 │
 ├── data/
-│   ├── raw/
-│   └── processed/
+│   └── raw/                    # Raw Olist dataset (CSV)
 │
-├── olist_pipeline/
+├── olist_pipeline/             # dbt Core Transformation Layer
 │   ├── models/
-│   │   ├── staging/
-│   │   ├── intermediate/
-│   │   └── marts/
-│   │
-│   ├── macros/
+│   │   ├── staging.sql
+│   │   └── marts.sql
 │   └── dbt_project.yml
 │
-├── analytics/
-│   ├── rfm_analysis.py
-│   ├── cohort_analysis.py
-│   └── customer_segmentation.py
+├── ai_visualizations/          # ML Model evaluation plots
 │
-├── dashboard/
-│   ├── pages/
-│   └── components/
-│
-├── app.py
-├── requirements.txt
+├── app.py                      # Streamlit High-Fidelity Dashboard
+├── model_training.py           # AI/ML Intelligence Pipeline
+├── load_data.py                # Data Acquisition Script
+├── requirements.txt            # Dependency Manifest
 └── README.md
 ```
+
+---
+
+## 🧠 AI/ML Intelligence Layer
+
+The platform is powered by an automated machine learning pipeline (`model_training.py`) that enriches transactional data with predictive insights:
+
+### 1. AI Churn Prediction
+- **Algorithm:** Gradient Boosting Classifier
+- **Features:** RFM metrics (Recency, Frequency, Monetary)
+- **Outcome:** Calculates churn risk probability for every customer.
+- **Business Value:** Enables proactive retention campaigns for "At-Risk" segments.
+
+### 2. Collaborative Filtering Recommendation Engine
+- **Methodology:** Latent Factor Modeling via Truncated SVD (Matrix Factorization)
+- **Logic:** Analyzes historical purchase patterns to predict the top 3 most relevant product categories for each unique customer.
+- **Business Value:** Powers personalized marketing and cross-selling strategies.
+
+### 3. NLP Sentiment Analysis
+- **Scope:** Analyzes customer order reviews.
+- **Outcome:** Classifies customer sentiment into Positive, Neutral, and Negative states.
+- **Business Value:** Provides immediate feedback on customer satisfaction and operational bottlenecks.
 
 ---
 
 ## 📈 Key Analytics Modules
 
 ### 1. Operations & Logistics Analytics
+Monitor revenue trends, order volume, and delivery performance. Average delivery time is approximately **12 days**, with significant regional variations.
 
-Monitor:
-
-- Revenue trends
-- Order volume
-- Order status distribution
-- Delivery performance
-- Regional logistics efficiency
-
-#### Key Insight
-
-Average delivery time is approximately **12 days**, with significant delays concentrated in several northern and northeastern states.
-
----
-
-### 2. Customer Segmentation (RFM Analysis)
-
-Customers are segmented using:
-
-- **Recency** – How recently a customer purchased
-- **Frequency** – How often a customer purchases
-- **Monetary** – How much a customer spends
-
-#### Generated Segments
-
-- Champions
-- Loyal Customers
-- Potential Loyalists
-- New Customers
-- At-Risk Customers
-- Lost Customers
-
-#### Key Insight
-
-The customer base is dominated by one-time and newly acquired buyers, while long-term loyal customers represent only a small portion of total users.
-
----
+### 2. Customer Segmentation (RFM + AI)
+Customers are segmented using the RFM methodology and enriched with **AI Churn Risk Scores**.
+- **Champions & Loyalists:** High-value targets.
+- **At-Risk:** Identified by both RFM position and AI churn probability.
 
 ### 3. Cohort Retention Analysis
-
-Monthly customer cohorts are tracked to evaluate retention behavior and repeat purchase patterns.
-
-#### Key Insight
-
-Retention drops sharply after the first month, indicating a transactional business model with limited recurring customer engagement.
-
-This finding suggests that increasing customer retention may generate a higher return than continuously investing in acquisition campaigns.
+Monthly customer cohorts are tracked to evaluate repeat purchase behavior. The dashboard provides interactive heatmaps and retention curves to visualize the customer lifecycle.
 
 ---
 
 ## 📊 Dashboard Features
 
 ### Executive Overview
+- KPI cards for Revenue, Orders, Freight, and Fulfillment.
+- Monthly Revenue Velocity and Top 10 Categories.
+- NLP Sentiment Breakdown.
 
-- KPI cards
-- Revenue tracking
-- Order monitoring
-- Delivery metrics
-
-### Customer Analytics
-
-- Interactive RFM segmentation
-- Segment distribution analysis
-- Customer drill-down exploration
+### Customer Intelligence Explorer
+- Interactive RFM segmentation.
+- **AI-Powered Drill-down:** View individual customer churn risk and personalized product recommendations.
 
 ### Retention Analytics
-
-- Cohort heatmaps
-- Retention curves
-- Customer lifecycle tracking
-
-### User Experience
-
-- Responsive layout
-- Light/Dark mode support
-- Interactive filtering
-- Real-time visual exploration
-
----
-
-## 📸 Dashboard Preview
-
-
-```markdown
-![Dashboard Overview](images/dashboard_overview.png)
-
-![Customer Segmentation](rfm_analytics.png)
-
-![Retention Analysis](cohort_retention_analysis.png)
-```
-
-
+- Cohort heatmaps (M+1 to M+12).
+- Retention curves for historical cohorts.
 
 ---
 
 ## ⚡ Getting Started
 
-### 1. Clone Repository
-
+### 1. Clone & Setup
 ```bash
 git clone https://github.com/thanhgiang0607/ecom_project.git
 cd ecom_project
-```
-
-### 2. Create Virtual Environment
-
-```bash
 python -m venv venv
-
-# Windows
-venv\Scripts\activate
-
-# macOS / Linux
-source venv/bin/activate
-```
-
-### 3. Install Dependencies
-
-```bash
+source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
 ```
 
----
+### 2. Data Acquisition
+```bash
+python load_data.py
+```
 
-## 🔄 Run dbt Models
-
-Navigate to the dbt project:
-
+### 3. Run dbt Models
 ```bash
 cd olist_pipeline
-```
-
-Verify configuration:
-
-```bash
-dbt debug
-```
-
-Build analytical models:
-
-```bash
 dbt run
+cd ..
 ```
 
-Generate documentation:
-
+### 4. Train AI Models
 ```bash
-dbt docs generate
-dbt docs serve
+python model_training.py
 ```
 
----
-
-## 📱 Launch Dashboard
-
-Return to the project root directory:
-
+### 5. Launch Dashboard
 ```bash
 streamlit run app.py
 ```
